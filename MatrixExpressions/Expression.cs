@@ -9,6 +9,7 @@ namespace MatrixExpressions
     {
         public IReadOnlyCollection<Term> Terms { get; }
 
+        // CONDITION: No duplicates in 'terms' under CompareTo
         public Expression(IReadOnlyCollection<Term> terms)
         {
             Terms = terms;
@@ -26,23 +27,32 @@ namespace MatrixExpressions
 
         public static Expression operator *(Expression lhs, Term rhs)
         {
+            return new Expression(lhs.Terms.Select(term => term * rhs).ToArray());
         }
 
         public static Expression operator *(Expression lhs, Expression rhs)
         {
+            // return rhs.Terms.Select(term => lhs * term).Aggregate((a,b) => a + b); // Simple but inefficient
+            return lhs.Terms.SelectMany(lterm => rhs.Terms.Select(rterm => lterm * rterm))
         }
 
         public static Expression operator /(Expression lhs, Term rhs)
         {
         }
 
+        private static Term MergeTerm(Term lhs, Term rhs)
+        {
+            return new Term(lhs.Coefficient + rhs.Coefficient, lhs.Variables);
+        }
+
         public static Expression operator +(Expression lhs, Expression rhs)
         {
-
+            return new Expression(SortedOperations.Merge(lhs.Terms, rhs.Terms, MergeTerm).Where(term => term.Coefficient != 0).ToArray());
         }
 
         public static Expression operator -(Expression lhs, Expression rhs)
         {
+            return new Expression(SortedOperations.Merge(lhs.Terms, rhs.Terms.Select(term => -term), MergeTerm).Where(term => term.Coefficient != 0).ToArray());
         }
 
         public static Expression operator +(Expression expression)

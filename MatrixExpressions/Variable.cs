@@ -35,12 +35,35 @@ namespace MatrixExpressions
 
         public int CompareTo(Variable other)
         {
-            return ID.CompareTo(other.ID);
+            int comp = ID.CompareTo(other.ID);
+            if (comp != 0)
+                return comp;
+            return Exponent.CompareTo(other.Exponent);
         }
 
         public static Variable operator ~(Variable variable)
         {
             return new Variable(variable.ID, -variable.Exponent);
+        }
+
+        public class BaseComparer : Comparer<Variable>
+        {
+            public override int Compare(Variable x, Variable y)
+            {
+                return x.ID.CompareTo(y.ID);
+            }
+        }
+
+        // Allows variable sorting order to be stable (preserved) under multiplication
+        public class NullableComparer : Comparer<Variable?>
+        {
+            public override int Compare(Variable? x, Variable? y)
+            {
+                if (x == null && y == null) return 0;
+                Variable lhs = x ?? new Variable(y.Value.ID, 0);
+                Variable rhs = y ?? new Variable(x.Value.ID, 0);
+                return lhs.CompareTo(rhs);
+            }
         }
     }
 }

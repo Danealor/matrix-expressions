@@ -10,18 +10,23 @@ namespace MatrixExpressions
         public double Coefficient { get; }
         public IReadOnlyCollection<Variable> Variables { get; }
 
+        private static Variable.BaseComparer _baseComparer = new Variable.BaseComparer();
+        private static Variable.NullableComparer _nullComparer = new Variable.NullableComparer();
+
         public Term(double constant)
         {
             Coefficient = constant;
             Variables = new Variable[] { };
         }
-
+        
+        // CONDITION: No duplicates in 'variables' under Variable.BaseComparer
         public Term(IReadOnlyCollection<Variable> variables)
         {
             Coefficient = 1.0;
             Variables = variables;
         }
 
+        // CONDITION: No duplicates in 'variables' under Variable.BaseComparer
         public Term(double coefficient, IReadOnlyCollection<Variable> variables)
         {
             Coefficient = coefficient;
@@ -40,10 +45,7 @@ namespace MatrixExpressions
 
         public int CompareTo(Term other)
         {
-            for (int i = 0; i < this.Variables.Count && i < other.Variables.Count; i++)
-            {
-
-            }
+            return Variables.CompareToNullDense(other.Variables, _nullComparer, _baseComparer);
         }
 
         private static Variable MergeVariable(Variable lhs, Variable rhs)
@@ -53,12 +55,12 @@ namespace MatrixExpressions
 
         public static Term operator *(Term lhs, Term rhs)
         {
-            return new Term(lhs.Coefficient * rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables, MergeVariable).Where(var => var.Exponent != 0).ToArray());
+            return new Term(lhs.Coefficient * rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables, MergeVariable, _baseComparer).Where(var => var.Exponent != 0).ToArray());
         }
 
         public static Term operator /(Term lhs, Term rhs)
         {
-            return new Term(lhs.Coefficient / rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables.Select(var => ~var), MergeVariable).Where(var => var.Exponent != 0).ToArray());
+            return new Term(lhs.Coefficient / rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables.Select(var => ~var), MergeVariable, _baseComparer).Where(var => var.Exponent != 0).ToArray());
         }
 
         public static Term operator +(Term term)
