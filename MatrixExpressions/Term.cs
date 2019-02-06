@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MatrixExpressions
 {
-    public struct Term
+    public struct Term : IComparable<Term>
     {
         public double Coefficient { get; }
         public IReadOnlyCollection<Variable> Variables { get; }
@@ -38,6 +38,14 @@ namespace MatrixExpressions
             return new Term(new Variable[] { variable });
         }
 
+        public int CompareTo(Term other)
+        {
+            for (int i = 0; i < this.Variables.Count && i < other.Variables.Count; i++)
+            {
+
+            }
+        }
+
         private static Variable MergeVariable(Variable lhs, Variable rhs)
         {
             return new Variable(lhs.ID, lhs.Exponent + rhs.Exponent);
@@ -45,12 +53,12 @@ namespace MatrixExpressions
 
         public static Term operator *(Term lhs, Term rhs)
         {
-            return new Term(lhs.Coefficient * rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables, MergeVariable).ToArray());
+            return new Term(lhs.Coefficient * rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables, MergeVariable).Where(var => var.Exponent != 0).ToArray());
         }
 
         public static Term operator /(Term lhs, Term rhs)
         {
-            return new Term(lhs.Coefficient / rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables.Select(var => ~var), MergeVariable).ToArray());
+            return new Term(lhs.Coefficient / rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables.Select(var => ~var), MergeVariable).Where(var => var.Exponent != 0).ToArray());
         }
 
         public static Term operator +(Term term)
