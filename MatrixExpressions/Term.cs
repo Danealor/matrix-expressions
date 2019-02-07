@@ -48,9 +48,51 @@ namespace MatrixExpressions
             return Variables.CompareToNullDense(other.Variables, _nullComparer, _baseComparer);
         }
 
+        public string ToString(IVariableStore store)
+        {
+            if (Variables.Count == 0) return Coefficient.ToString();
+            StringBuilder sb = new StringBuilder();
+            if (Coefficient != 1)
+            {
+                if (Coefficient == -1)
+                    sb.Append('-');
+                else
+                    sb.Append(Coefficient);
+            }
+            foreach (var variable in Variables)
+                sb.Append(variable.ToString(store));
+            return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            if (Variables.Count == 0) return Coefficient.ToString();
+            StringBuilder sb = new StringBuilder();
+            if (Coefficient != 1)
+            {
+                if (Coefficient == -1)
+                    sb.Append('-');
+                else
+                    sb.Append(Coefficient);
+            }
+            foreach (var variable in Variables)
+                sb.Append(variable.ToString());
+            return sb.ToString();
+        }
+
         private static Variable MergeVariable(Variable lhs, Variable rhs)
         {
             return new Variable(lhs.ID, lhs.Exponent + rhs.Exponent);
+        }
+
+        public static Term operator *(Term lhs, Variable rhs)
+        {
+            return lhs * (Term)rhs;
+        }
+
+        public static Term operator *(Variable lhs, Term rhs)
+        {
+            return (Term)lhs * rhs;
         }
 
         public static Term operator *(Term lhs, Term rhs)
@@ -58,9 +100,39 @@ namespace MatrixExpressions
             return new Term(lhs.Coefficient * rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables, MergeVariable, _baseComparer).Where(var => var.Exponent != 0).ToArray());
         }
 
+        public static Term operator /(Term lhs, Variable rhs)
+        {
+            return lhs / (Term)rhs;
+        }
+
+        public static Term operator /(Variable lhs, Term rhs)
+        {
+            return (Term)lhs / rhs;
+        }
+
         public static Term operator /(Term lhs, Term rhs)
         {
             return new Term(lhs.Coefficient / rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables.Select(var => ~var), MergeVariable, _baseComparer).Where(var => var.Exponent != 0).ToArray());
+        }
+
+        public static Expression operator +(Term lhs, Variable rhs)
+        {
+            return lhs + (Expression)rhs;
+        }
+
+        public static Expression operator +(Variable lhs, Term rhs)
+        {
+            return (Expression)lhs + rhs;
+        }
+
+        public static Expression operator -(Term lhs, Variable rhs)
+        {
+            return lhs - (Expression)rhs;
+        }
+
+        public static Expression operator -(Variable lhs, Term rhs)
+        {
+            return (Expression)lhs - rhs;
         }
 
         public static Term operator +(Term term)

@@ -41,6 +41,25 @@ namespace MatrixExpressions
             return Exponent.CompareTo(other.Exponent);
         }
 
+        private string ToString(string varName)
+        {
+            if (string.IsNullOrWhiteSpace(varName))
+                varName = "?";
+            if (Exponent == 1)
+                return varName;
+            return varName + "^" + Exponent;
+        }
+
+        public string ToString(IVariableStore store)
+        {
+            return ToString(store.GetName(ID));
+        }
+
+        public override string ToString()
+        {
+            return ToString("{" + ID + "}");
+        }
+
         public static Variable operator ~(Variable variable)
         {
             return new Variable(variable.ID, -variable.Exponent);

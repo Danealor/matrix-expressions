@@ -8,5 +8,6 @@ namespace MatrixExpressions
     {
         int GetID(string name);
         int GetOrCreateID(string name);
+        string GetName(int id);
     }
 }
