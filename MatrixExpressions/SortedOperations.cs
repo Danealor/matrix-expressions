@@ -64,13 +64,28 @@ namespace MatrixExpressions
             }
         }
         
-        public static IEnumerable<T> MergeMany<T>(IEnumerable<IEnumerable<T>> lists, Func<T, T, T> mergeFunc, Comparison<T> comparison)
+        public static IEnumerable<T> MergeMany<T>(IEnumerable<IEnumerable<T>> lists, Func<T, T, T> mergeFunc) where T : IComparable<T>
         {
             var enumerators = lists.Select(list => list.GetEnumerator()).ToArray();
             bool[] hasCur = new bool[enumerators.Length];
+            int numRunning = enumerators.Length;
+            var BST = new SortedSet<KeyValuePairComparableWrapper<T, List<int>>>();
 
-            while (hasCur.Any())
+            while (numRunning > 0)
             {
+                var top = BST.First();
+                BST.Remove(top);
+                yield return top.Key;
+
+                foreach (int i in top.Value)
+                {
+                    if (enumerators[i].MoveNext())
+                    {
+                        var val = enumerators[i].Current;
+                        BST.
+                    }
+                }
+
                 if (left && right)
                 {
                     T leftVal = lhsEnum.Current;
