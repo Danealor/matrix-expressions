@@ -9,7 +9,7 @@ namespace MatrixExpressions
     {
         public IReadOnlyCollection<Term> Terms { get; }
 
-        // CONDITION: No duplicates in 'terms' under CompareTo
+        // CONDITION: No duplicates in 'terms' under default Comparer
         public Expression(IReadOnlyCollection<Term> terms)
         {
             Terms = terms;
@@ -134,6 +134,11 @@ namespace MatrixExpressions
         public static Expression operator -(Expression expression)
         {
             return new Expression(expression.Terms.Select(term => -term).ToArray());
+        }
+
+        public static Expression Sum(IEnumerable<Expression> expressions)
+        {
+            return new Expression(SortedOperations.MergeMany(expressions.Select(expr => expr.Terms), MergeTerm).Where(term => term.Coefficient != 0).ToArray());
         }
     }
 }
