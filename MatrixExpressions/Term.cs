@@ -149,5 +149,15 @@ namespace MatrixExpressions
         {
             return 1.0 / term;
         }
+
+        public static Term Pow(Term term, int exponent)
+        {
+            return new Term(Math.Pow(term.Coefficient, exponent), term.Variables.Select(var => new Variable(var.ID, var.Exponent * exponent)).ToArray());
+        }
+
+        public Term Pow(int exponent)
+        {
+            return Pow(this, exponent);
+        }
     }
 }
