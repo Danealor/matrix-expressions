@@ -64,61 +64,59 @@ namespace MatrixExpressions
             }
         }
         
-        public static IEnumerable<T> MergeMany<T>(IEnumerable<IEnumerable<T>> lists, Func<T, T, T> mergeFunc) where T : IComparable<T>
+        // O(nrlogr) instead of O(nr^2) naive algorithm (n = max length of lists, r = number of lists)
+        public static IEnumerable<T> MergeMany<T>(this IEnumerable<IEnumerable<T>> lists, Func<T, T, T> mergeFunc) where T : IComparable<T>
         {
             var enumerators = lists.Select(list => list.GetEnumerator()).ToArray();
             bool[] hasCur = new bool[enumerators.Length];
             int numRunning = enumerators.Length;
-            var BST = new SortedSet<KeyValuePairComparableWrapper<T, List<int>>>();
+            var BST = new SortedDictionary<ComparableWrapper<T>, KeyValuePair<Wrapper<T>, List<int>>>();
+            bool first = true;
 
             while (numRunning > 0)
             {
-                var top = BST.First();
-                BST.Remove(top);
-                yield return top.Key;
-
-                foreach (int i in top.Value)
+                IEnumerable<int> indices;
+                if (first)
                 {
-                    if (enumerators[i].MoveNext())
-                    {
-                        var val = enumerators[i].Current;
-                        BST.
-                    }
-                }
-
-                if (left && right)
-                {
-                    T leftVal = lhsEnum.Current;
-                    T rightVal = rhsEnum.Current;
-
-                    int comp = comparison(leftVal, rightVal);
-                    if (comp == 0)
-                    {
-                        yield return mergeFunc(leftVal, rightVal);
-                        lhsEnum.MoveNext(); // arbitrary
-                    }
-                    else if (comp < 0)
-                    {
-                        yield return leftVal;
-                        lhsEnum.MoveNext();
-                    }
-                    else
-                    {
-                        yield return rightVal;
-                        rhsEnum.MoveNext();
-                    }
-                }
-                else if (left)
-                {
-                    T leftVal = lhsEnum.Current;
-                    yield return leftVal;
-                    lhsEnum.MoveNext();
+                    first = false;
+                    indices = Enumerable.Range(0, enumerators.Length);
+                    for (int i = 0; i < hasCur.Length; i++) hasCur[i] = true;
                 }
                 else
                 {
-                    T rightVal = rhsEnum.Current;
-                    yield return rightVal;
-                    rhsEnum.MoveNext();
+                    var top = BST.First();
+                    BST.Remove(top.Key);
+                    indices = top.Value.Value;
+                    yield return top.Key.Value;
+                }
+
+                foreach (int i in indices)
+                {
+                    if (hasCur[i])
+                    {
+                        if (enumerators[i].MoveNext())
+                        {
+                            var val = enumerators[i].Current;
+                            KeyValuePair<Wrapper<T>, List<int>> res;
+                            if (BST.TryGetValue(new ComparableWrapper<T>(val), out res))
+                            {
+                                res.Key.Value = mergeFunc(res.Key.Value, val);
+                                res.Value.Add(i);
+                            }
+                            else
+                            {
+                                var wrapper = new ComparableWrapper<T>(val);
+                                res = new KeyValuePair<Wrapper<T>, List<int>>(wrapper, new List<int>());
+                                res.Value.Add(i);
+                                BST.Add(wrapper, res);
+                            }
+                        }
+                        else
+                        {
+                            hasCur[i] = false;
+                            numRunning--;
+                        }
+                    }
                 }
             }
         }

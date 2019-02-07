@@ -20,6 +20,16 @@ namespace MatrixExpressions
             return new Expression(new Term[] { term });
         }
 
+        public static implicit operator Expression(Variable variable)
+        {
+            return variable;
+        }
+
+        private static Term MergeTerm(Term lhs, Term rhs)
+        {
+            return new Term(lhs.Coefficient + rhs.Coefficient, lhs.Variables);
+        }
+
         public static Expression operator *(Term lhs, Expression rhs)
         {
             return rhs * lhs; // Commutative
@@ -32,17 +42,23 @@ namespace MatrixExpressions
 
         public static Expression operator *(Expression lhs, Expression rhs)
         {
+            if (rhs.Terms.Count < lhs.Terms.Count) return rhs * lhs; // minimize parallel width (minimize r)
             // return rhs.Terms.Select(term => lhs * term).Aggregate((a,b) => a + b); // Simple but inefficient
-            return lhs.Terms.SelectMany(lterm => rhs.Terms.Select(rterm => lterm * rterm))
+            return new Expression(lhs.Terms.Select(lterm => rhs.Terms.Select(rterm => lterm * rterm)).MergeMany(MergeTerm).ToArray());
         }
 
         public static Expression operator /(Expression lhs, Term rhs)
         {
         }
 
-        private static Term MergeTerm(Term lhs, Term rhs)
+        public static Expression operator +(Expression lhs, Term rhs)
         {
-            return new Term(lhs.Coefficient + rhs.Coefficient, lhs.Variables);
+            return lhs + rhs;
+        }
+
+        public static Expression operator +(Term lhs, Expression rhs)
+        {
+            return lhs + rhs;
         }
 
         public static Expression operator +(Expression lhs, Expression rhs)
