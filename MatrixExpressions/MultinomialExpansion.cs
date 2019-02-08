@@ -6,39 +6,64 @@ namespace MatrixExpressions
 {
     static class MultinomialExpansion
     {
-        public IEnumerable<int[]> Combinations(int m, int n)
+        public static IEnumerable<int[]> Combinations(int m, int n)
         {
             int[] counts = new int[n+1];
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i <= n; i++)
                 counts[i] = 0;
-            counts[n] = 1;
 
             int occurences = 0;
+            int outstanding = n;
+            int marker = n + 1;
             Stack<int> markers = new Stack<int>();
-            markers.Push(n);
             while (true)
             {
-                yield return counts;
-
-                int marker = markers.Peek();
-                counts[marker]--;
-
-                if (counts[marker] == 0)
-                    markers.Pop();
-
-                int outstanding = marker--; // amount we have to make up
-                counts[marker] = marker == 1 ? 2 : 1;
-
-                while (true)
+                while (markers.Count > 0)
                 {
-                    
-                    if (marker == 0 || n / marker)
+                    marker = markers.Peek();
+
+                    if (marker == 1 || counts[marker] == 1)
+                    {
+                        markers.Pop();
+                        outstanding += marker * counts[marker];
+                        occurences -= counts[marker];
+                        counts[marker] = 0;
+                    }
+                    else
+                    {
+                        outstanding += marker;
+                        occurences--;
+                        counts[marker]--;
+                        break;
+                    }
                 }
 
+                if (marker == 1) break;
 
                 while (outstanding > 0)
                 {
-                    marker = outstanding / 
+                    marker--;
+                    if (outstanding > marker)
+                    {
+                        int count = outstanding / marker;
+                        outstanding -= count * marker;
+                        occurences += count;
+                        counts[marker] = count;
+                    }
+                    else
+                    {
+                        marker = outstanding;
+                        outstanding = 0;
+                        occurences++;
+                        counts[marker] = 1;
+                    }
+                    markers.Push(marker);
+                }
+
+                if (occurences <= m) // this can maybe be done better (how far to backtrack?)
+                {
+                    counts[0] = m - occurences;
+                    yield return counts;
                 }
             }
         }
