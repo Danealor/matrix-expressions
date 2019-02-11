@@ -4,6 +4,14 @@ using System.Text;
 
 namespace MatrixExpressions
 {
+    static class Utilities
+    {
+        public static Expression Sum(this IEnumerable<Expression> expressions)
+        {
+            return Expression.Sum(expressions);
+        }
+    }
+
     class Wrapper<T>
     {
         public T Value { get; set; }

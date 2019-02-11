@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace MatrixExpressions
 {
     static class MultinomialExpansion
     {
+        // Switch to optimized Atkin's sieve when that is fixed
+        private static LimitedPrimeSieve _primes = new EratosthenesSieve();
+
         public static IEnumerable<int[]> Combinations(int m, int n)
         {
             int[] counts = new int[n+1];
@@ -66,6 +70,52 @@ namespace MatrixExpressions
                     yield return counts;
                 }
             }
+        }
+
+        // N choose K - O(k)
+        public static long BinomialCoefficient(int n, int k)
+        {
+
+            long r = 1;
+            if (k > n / 2) return BinomialCoefficient(n, n - k);
+            if (k > n) return 0;
+            for (uint d = 1; d <= k; d++)
+            {
+                r *= n--;
+                r /= d;
+            }
+            return r;
+        }
+
+        private static IEnumerable<int> Digits(int num, int pBase)
+        {
+            while (num > 0)
+            {
+                yield return num % pBase;
+                num /= pBase;
+            }
+        }
+
+        public static int MultinomialKummerValuation(int p, int n, IReadOnlyCollection<int> m)
+        {
+            return (m.Select(mi => Digits(mi, p).Sum()).Sum() - Digits(n, p).Sum()) / (p - 1);
+        }
+
+        public static double MultinomialCoefficientKummer(int n, IReadOnlyCollection<int> m)
+        {
+            double result = 1;
+            foreach (int p in _primes.TakeUpTo(n))
+                result *= Math.Pow(p, MultinomialKummerValuation(p, n, m));
+            return result;
+        }
+
+        public static double MultinomialCoefficient(int n, IReadOnlyCollection<int> m)
+        {
+            double result = 1;
+            int sum = 0;
+            foreach (int mi in m)
+                result *= BinomialCoefficient(sum += mi, mi);
+            return result;
         }
     }
 }

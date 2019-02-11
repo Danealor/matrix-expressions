@@ -25,6 +25,11 @@ namespace MatrixExpressions
             return variable;
         }
 
+        public static implicit operator Expression(double constant)
+        {
+            return constant;
+        }
+
         public string ToString(IVariableStore store)
         {
             StringBuilder sb = new StringBuilder();
