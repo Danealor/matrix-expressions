@@ -85,6 +85,16 @@ namespace MatrixExpressions
             return new Variable(lhs.ID, lhs.Exponent + rhs.Exponent);
         }
 
+        public static Term operator *(Term lhs, double rhs)
+        {
+            return lhs * (Term)rhs;
+        }
+
+        public static Term operator *(double lhs, Term rhs)
+        {
+            return (Term)lhs * rhs;
+        }
+
         public static Term operator *(Term lhs, Variable rhs)
         {
             return lhs * (Term)rhs;
@@ -100,6 +110,16 @@ namespace MatrixExpressions
             return new Term(lhs.Coefficient * rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables, MergeVariable, _baseComparer).Where(var => var.Exponent != 0).ToArray());
         }
 
+        public static Term operator /(Term lhs, double rhs)
+        {
+            return lhs / (Term)rhs;
+        }
+
+        public static Term operator /(double lhs, Term rhs)
+        {
+            return (Term)lhs / rhs;
+        }
+
         public static Term operator /(Term lhs, Variable rhs)
         {
             return lhs / (Term)rhs;
@@ -113,6 +133,16 @@ namespace MatrixExpressions
         public static Term operator /(Term lhs, Term rhs)
         {
             return new Term(lhs.Coefficient / rhs.Coefficient, SortedOperations.Merge(lhs.Variables, rhs.Variables.Select(var => ~var), MergeVariable, _baseComparer).Where(var => var.Exponent != 0).ToArray());
+        }
+
+        public static Expression operator +(Term lhs, double rhs)
+        {
+            return lhs + (Expression)rhs;
+        }
+
+        public static Expression operator +(double lhs, Term rhs)
+        {
+            return (Expression)lhs + rhs;
         }
 
         public static Expression operator +(Term lhs, Variable rhs)
@@ -135,6 +165,11 @@ namespace MatrixExpressions
             return (Expression)lhs - rhs;
         }
 
+        public static Term operator ^(Term term, int exponent)
+        {
+            return new Term(Math.Pow(term.Coefficient, exponent), term.Variables.Select(var => var ^ exponent).ToArray());
+        }
+
         public static Term operator +(Term term)
         {
             return term; // no need for deep (or even shallow) copy because this is read-only, by definition!
@@ -150,14 +185,9 @@ namespace MatrixExpressions
             return 1.0 / term;
         }
 
-        public static Term Pow(Term term, int exponent)
-        {
-            return new Term(Math.Pow(term.Coefficient, exponent), term.Variables.Select(var => new Variable(var.ID, var.Exponent * exponent)).ToArray());
-        }
-
         public Term Pow(int exponent)
         {
-            return Pow(this, exponent);
+            return this ^ exponent;
         }
     }
 }

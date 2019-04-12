@@ -60,9 +60,39 @@ namespace MatrixExpressions
             return ToString("{" + ID + "}");
         }
 
+        public static Term operator *(Variable lhs, Variable rhs)
+        {
+            return (Term)lhs * rhs;
+        }
+
+        public static Term operator /(Variable lhs, Variable rhs)
+        {
+            return (Term)lhs / rhs;
+        }
+
+        public static Expression operator +(Variable lhs, Variable rhs)
+        {
+            return (Expression)lhs + rhs;
+        }
+
+        public static Expression operator -(Variable lhs, Variable rhs)
+        {
+            return (Expression)lhs - rhs;
+        }
+
+        public static Variable operator ^(Variable variable, int exponent)
+        {
+            return new Variable(variable.ID, variable.Exponent * exponent);
+        }
+
         public static Variable operator ~(Variable variable)
         {
             return new Variable(variable.ID, -variable.Exponent);
+        }
+
+        public Variable Pow(int exponent)
+        {
+            return this ^ exponent;
         }
 
         public class BaseComparer : Comparer<Variable>

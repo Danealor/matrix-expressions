@@ -31,10 +31,44 @@ namespace MatrixExpressions
 
         public string ToString(IVariableStore store)
         {
+            int di = Elements.GetLength(0);
+            int dj = Elements.GetLength(1);
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < di; i++)
+            {
+                for (int j = 0; j < dj; j++)
+                {
+                    string sExp = Elements[i, j].ToString(store);
+                    sb.Append(sExp);
+                    if (j < dj - 1)
+                        sb.Append(',');
+                }
+                if (i < di - 1)
+                    sb.Append(Environment.NewLine);
+            }
+            return sb.ToString();
         }
 
         public override string ToString()
         {
+            int di = Elements.GetLength(0);
+            int dj = Elements.GetLength(1);
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < di; i++)
+            {
+                for (int j = 0; j < dj; j++)
+                {
+                    string sExp = Elements[i, j].ToString();
+                    sb.Append(sExp);
+                    if (j < dj - 1)
+                        sb.Append(',');
+                }
+                if (i < di - 1)
+                    sb.Append(Environment.NewLine);
+            }
+            return sb.ToString();
         }
 
         public static Matrix operator *(Matrix lhs, Matrix rhs)
@@ -56,38 +90,59 @@ namespace MatrixExpressions
         public static Matrix operator +(Matrix lhs, Matrix rhs)
         {
             int di = lhs.Elements.GetLength(0);
-            int dj = rhs.Elements.GetLength(1);
-            return new Expression(SortedOperations.Merge(lhs.Terms, rhs.Terms, MergeTerm).Where(term => term.Coefficient != 0).ToArray());
+            int dj = lhs.Elements.GetLength(1);
+
+            if (di != rhs.Elements.GetLength(0) || dj != rhs.Elements.GetLength(1))
+                throw new ArgumentException("Matrix dimensions don't match.");
+            
+            Matrix result = new Matrix(di, dj);
+            for (int i = 0; i < di; i++)
+                for (int j = 0; j < dj; j++)
+                    result[i, j] = lhs[i, j] + rhs[i, j];
+
+            return result;
         }
 
-        public static Expression operator -(Expression lhs, Term rhs)
+        public static Matrix operator -(Matrix lhs, Matrix rhs)
         {
-            return lhs - (Expression)rhs;
+            int di = lhs.Elements.GetLength(0);
+            int dj = lhs.Elements.GetLength(1);
+
+            if (di != rhs.Elements.GetLength(0) || dj != rhs.Elements.GetLength(1))
+                throw new ArgumentException("Matrix dimensions don't match.");
+
+            Matrix result = new Matrix(di, dj);
+            for (int i = 0; i < di; i++)
+                for (int j = 0; j < dj; j++)
+                    result[i, j] = lhs[i, j] - rhs[i, j];
+
+            return result;
         }
 
-        public static Expression operator -(Term lhs, Expression rhs)
+        public static Matrix operator +(Matrix matrix)
         {
-            return (Expression)lhs - rhs;
+            int di = matrix.Elements.GetLength(0);
+            int dj = matrix.Elements.GetLength(1);
+
+            Matrix result = new Matrix(di, dj);
+            for (int i = 0; i < di; i++)
+                for (int j = 0; j < dj; j++)
+                    result[i, j] = matrix[i, j];
+
+            return result;
         }
 
-        public static Expression operator -(Expression lhs, Expression rhs)
+        public static Matrix operator -(Matrix matrix)
         {
-            return new Expression(SortedOperations.Merge(lhs.Terms, rhs.Terms.Select(term => -term), MergeTerm).Where(term => term.Coefficient != 0).ToArray());
-        }
+            int di = matrix.Elements.GetLength(0);
+            int dj = matrix.Elements.GetLength(1);
 
-        public static Expression operator +(Expression expression)
-        {
-            return expression; // no need for deep (or even shallow) copy because this is read-only, by definition!
-        }
+            Matrix result = new Matrix(di, dj);
+            for (int i = 0; i < di; i++)
+                for (int j = 0; j < dj; j++)
+                    result[i, j] = -matrix[i, j];
 
-        public static Expression operator -(Expression expression)
-        {
-            return new Expression(expression.Terms.Select(term => -term).ToArray());
-        }
-
-        public static Expression Sum(IEnumerable<Expression> expressions)
-        {
-            return new Expression(SortedOperations.MergeMany(expressions.Select(expr => expr.Terms), MergeTerm).Where(term => term.Coefficient != 0).ToArray());
+            return result;
         }
     }
 }
